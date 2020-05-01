@@ -75,7 +75,6 @@ public class GameController : MonoBehaviour
                 nbrs = GetNeighbours(col, row);
                 foreach(Point p in nbrs)
                 {
-                    // Debug.Log("(" + p.X.ToString() + ", " + p.Y.ToString() + ")");
                     try
                     {
                         if (board[p.Y, p.X] == -1)
