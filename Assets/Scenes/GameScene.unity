@@ -810,6 +810,22 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
+    - target: {fileID: 8467730941254657948, guid: 7a29b0490abbec146965c5c9e5df2141,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 751a0e204ec307d42b224c6e81d030c8,
+        type: 3}
+    - target: {fileID: 8467730941254657948, guid: 7a29b0490abbec146965c5c9e5df2141,
+        type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8467730941254657948, guid: 7a29b0490abbec146965c5c9e5df2141,
+        type: 3}
+      propertyPath: m_PreserveAspect
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7a29b0490abbec146965c5c9e5df2141, type: 3}
 --- !u!224 &1875952383 stripped
@@ -836,3 +852,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3f6fb4dbe75cd34499a61ad5fdc9555, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  clickedSquare: {fileID: 21300000, guid: 831949474bf060e45a0f9fb136df3f27, type: 3}

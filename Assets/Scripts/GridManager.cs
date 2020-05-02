@@ -34,12 +34,26 @@ public class GridManager : MonoBehaviour
         cell.transform.SetParent(GameObject.FindGameObjectWithTag("Grid").transform, false);
         GetGridSize();
         GenerateGrid();
+
+        if (PlayerPrefs.HasKey("row"))
+        {
+            PlayerPrefs.DeleteKey("row");
+            PlayerPrefs.DeleteKey("col");
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (PlayerPrefs.HasKey("row"))
+        {
+            var row = PlayerPrefs.GetInt("row");
+            var col = PlayerPrefs.GetInt("col");
+            List<GameObject> cellsToExpand = new List<GameObject> {grid[row, col]};
+            ExpandZeros(new List<Point>(), cellsToExpand);
+            PlayerPrefs.DeleteKey("row");
+            PlayerPrefs.DeleteKey("col");
+        }
     }
 
     private void GetGridSize()
@@ -57,7 +71,7 @@ public class GridManager : MonoBehaviour
                 var newCell = Instantiate(cell, new Vector2(buffer + (col * cellSize), -buffer - (row * cellSize)), Quaternion.identity);
                 newCell.transform.SetParent(GameObject.FindGameObjectWithTag("Grid").transform, false);
                 
-                newCell.GetComponent<CellManager>().SetSize(cellSize);
+                newCell.GetComponent<CellManager>().InitializeValues(cellSize, row, col);
                 grid[row, col] = newCell;
             }
         }
@@ -87,6 +101,7 @@ public class GridManager : MonoBehaviour
             {
                 // Space unoccupied, plant bomb
                 cManager.SetValue(-1);
+                board[randY, randX] = -1;
                 ++bombsPlaced;
             }
         }
@@ -125,6 +140,7 @@ public class GridManager : MonoBehaviour
                     }
                 }
                 cManager.SetValue(bombsTouching);
+                board[row, col] = bombsTouching;
             }
         }
     }
@@ -160,23 +176,69 @@ public class GridManager : MonoBehaviour
         return nbrs;
     }
 
-    // Test function for printing out board
-    // void PrintBoard()
-    // {
-    //     string board_str;
+    // ExpandZeros expands all adjacent cells next to connected zeros
+    private void ExpandZeros(List<Point> expanded, List<GameObject> cellsToExpand)
+    {
+        // No more cells, recursion finished
+        if (cellsToExpand.Count == 0)
+        {
+            return;
+        }
 
-    //     for (int row = 0; row < rows; ++row)
-    //     {
-    //         board_str = "";
-    //         for (int col = 0; col < cols; ++col)
-    //         {
-    //             if (board[row, col] != -1)
-    //             {
-    //                 board_str += " ";
-    //             }
-    //             board_str += board[row, col] + " ";
-    //         }
-    //         Debug.Log(board_str);
-    //     }
-    // }
+        // Get the current cell we're expanding and it's information
+        var currentCell = cellsToExpand[0];
+        var cManager = currentCell.GetComponent<CellManager>();
+        var row = cManager.GetRow();
+        var col = cManager.GetCol();
+        var coords = new Point(col, row);
+
+        // Add cell coords to ones we've expanded
+        expanded.Add(coords);
+        cellsToExpand.Remove(currentCell);
+        
+        // Only add neighbours for expansion if this is also a 0 cell
+        if (cManager.GetValue() == 0)
+        {
+            // Add all new neighbours to cellsToExpand
+            foreach (Point p in GetNeighbours(col, row))
+            {
+                var nbrCell = grid[p.Y, p.X];
+
+                // Find out if the neighbour also has 0 bombs and is new to us
+                if (!expanded.Contains(p) && !cellsToExpand.Contains(nbrCell))
+                {
+                    cellsToExpand.Add(nbrCell);
+                }
+            }
+        }
+
+        // Lock so it doesn't trigger re-expansion later
+        cManager.SetLock(true);
+        // Reveal cell
+        cManager.Reveal();
+        cManager.SetLock(false);
+
+        // Recurse
+        ExpandZeros(expanded, cellsToExpand);
+    }
+
+    // Test function for printing out board
+    void PrintBoard()
+    {
+        string board_str;
+
+        for (int row = 0; row < rows; ++row)
+        {
+            board_str = "";
+            for (int col = 0; col < cols; ++col)
+            {
+                if (board[row, col] != -1)
+                {
+                    board_str += " ";
+                }
+                board_str += board[row, col] + " ";
+            }
+            Debug.Log(board_str);
+        }
+    }
 }
