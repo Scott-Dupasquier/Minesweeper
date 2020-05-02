@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing; // Point
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class GridManager : MonoBehaviour
 {
@@ -45,6 +46,24 @@ public class GridManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Listen for a meaningful click
+        if (Input.GetMouseButtonDown(0))
+        {
+            // Pressed
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            // Wants to reveal this location
+            UpdateCell("revealed");
+        }
+        
+        if (Input.GetMouseButtonUp(1))
+        {
+            // Update right click cycle
+            UpdateCell("rightclick");
+        }
+
         if (PlayerPrefs.HasKey("row"))
         {
             var row = PlayerPrefs.GetInt("row");
@@ -54,6 +73,43 @@ public class GridManager : MonoBehaviour
             PlayerPrefs.DeleteKey("row");
             PlayerPrefs.DeleteKey("col");
         }
+
+        if (PlayerPrefs.HasKey("finished"))
+        {
+            // Game has ended, reveal the board
+            RevealCells();
+            PlayerPrefs.DeleteKey("finished");
+        }
+    }
+
+    private void RevealCells()
+    {
+        for (int row = 0; row < rows; ++row)
+        {
+            for (int col = 0; col < cols; ++col)
+            {
+                var cManager = grid[row, col].GetComponent<CellManager>();
+                cManager.Reveal();
+            }
+        }
+    }
+
+    private void UpdateCell(string spriteToUse)
+    {
+        // Get selected GameObject (tile) and send the request to change the Sprite
+        // GameObject selected = EventSystem.current.currentSelectedGameObject;
+        GameObject selected = GetClickedGameObject();
+        var cManager = selected.GetComponent<CellManager>();
+        cManager.SetSprite(spriteToUse);
+    }
+
+    private GameObject GetClickedGameObject()
+    {
+        // Get the relative position of the mouse to the first cell
+        Vector2 relPos = Input.mousePosition - grid[0, 0].transform.position;
+        var col = (int) Math.Floor(relPos[0] / cellSize);
+        var row = (int) Math.Floor(relPos[1] / cellSize * -1);
+        return grid[row, col];
     }
 
     private void GetGridSize()
