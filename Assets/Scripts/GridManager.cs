@@ -20,6 +20,9 @@ public class GridManager : MonoBehaviour
     private int buffer;
     private float cellSize;
 
+    // Keep track of if the game is over
+    private bool finished;
+
     private const int numBombs = 99;
     // Start is called before the first frame update
     void Start()
@@ -30,6 +33,8 @@ public class GridManager : MonoBehaviour
         grid = new GameObject[rows, cols];
 
         buffer = 10;
+
+        finished = false;
 
         // Set cell parent to Grid so it shows up on screen
         cell.transform.SetParent(GameObject.FindGameObjectWithTag("Grid").transform, false);
@@ -46,39 +51,43 @@ public class GridManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Listen for a meaningful click
-        if (Input.GetMouseButtonDown(0))
+        if (!finished)
         {
-            // Pressed
-        }
+            // Listen for a meaningful click
+            if (Input.GetMouseButtonDown(0))
+            {
+                // Pressed
+            }
 
-        if (Input.GetMouseButtonUp(0))
-        {
-            // Wants to reveal this location
-            UpdateCell("revealed");
-        }
-        
-        if (Input.GetMouseButtonUp(1))
-        {
-            // Update right click cycle
-            UpdateCell("rightclick");
-        }
+            if (Input.GetMouseButtonUp(0))
+            {
+                // Wants to reveal this location
+                UpdateCell("revealed");
+            }
+            
+            if (Input.GetMouseButtonUp(1))
+            {
+                // Update right click cycle
+                UpdateCell("rightclick");
+            }
 
-        if (PlayerPrefs.HasKey("row"))
-        {
-            var row = PlayerPrefs.GetInt("row");
-            var col = PlayerPrefs.GetInt("col");
-            List<GameObject> cellsToExpand = new List<GameObject> {grid[row, col]};
-            ExpandZeros(new List<Point>(), cellsToExpand);
-            PlayerPrefs.DeleteKey("row");
-            PlayerPrefs.DeleteKey("col");
-        }
+            if (PlayerPrefs.HasKey("row"))
+            {
+                var row = PlayerPrefs.GetInt("row");
+                var col = PlayerPrefs.GetInt("col");
+                List<GameObject> cellsToExpand = new List<GameObject> {grid[row, col]};
+                ExpandZeros(new List<Point>(), cellsToExpand);
+                PlayerPrefs.DeleteKey("row");
+                PlayerPrefs.DeleteKey("col");
+            }
 
-        if (PlayerPrefs.HasKey("finished"))
-        {
-            // Game has ended, reveal the board
-            RevealCells();
-            PlayerPrefs.DeleteKey("finished");
+            if (PlayerPrefs.HasKey("finished"))
+            {
+                // Game has ended, reveal the board
+                RevealCells();
+                PlayerPrefs.DeleteKey("finished");
+                finished = true;
+            }
         }
     }
 
@@ -89,7 +98,10 @@ public class GridManager : MonoBehaviour
             for (int col = 0; col < cols; ++col)
             {
                 var cManager = grid[row, col].GetComponent<CellManager>();
-                cManager.Reveal();
+                if (!cManager.GetRevealed())
+                {
+                    cManager.Reveal();
+                }
             }
         }
     }
@@ -134,6 +146,7 @@ public class GridManager : MonoBehaviour
 
         var rectTransform = GetComponent<RectTransform>();
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, (buffer * 2) + (cellSize * rows));
+        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (buffer * 2) + (cellSize * cols));
 
         PopulateBoard();
     }

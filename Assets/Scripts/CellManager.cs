@@ -13,6 +13,7 @@ public class CellManager : MonoBehaviour
     public Sprite bomb;
     public Sprite clickedBomb;
     public Sprite flag;
+    public Sprite incorrectFlag;
 
     private int value;
     private int row;
@@ -50,6 +51,11 @@ public class CellManager : MonoBehaviour
         return value;
     }
 
+    public bool GetRevealed()
+    {
+        return revealed;
+    }
+
     public int GetRow()
     {
         return row;
@@ -62,12 +68,6 @@ public class CellManager : MonoBehaviour
 
     public void SetSprite(string spriteToUse)
     {
-        // Cell revealed, nothing else to do
-        if (revealed)
-        {
-            return;
-        }
-
         if (spriteToUse.ToLower() == "revealed")
         {
             Reveal();
@@ -98,14 +98,14 @@ public class CellManager : MonoBehaviour
 
     public void Reveal()
     {
-        if (revealed || cycleStatus != "default")
-        {
-            // Nothing to do, it's already revealed
-            return;
-        }
-
         if (value == -1)
         {
+            // Don't allow a reveal click on flag or ? (? can be revealed if game is over however)
+            if (cycleStatus == "flag" || (cycleStatus == "?" && !PlayerPrefs.HasKey("finished")))
+            {
+                return;
+            }
+
             if (PlayerPrefs.HasKey("finished"))
             {
                 // We're revealing the board
@@ -123,10 +123,46 @@ public class CellManager : MonoBehaviour
         }
         else if (value != 0)
         {
-            GetComponentInChildren<TMP_Text>().text = value.ToString();
+            if (cycleStatus == "flag")
+            {
+                // Incorrectly marked this cell as a bomb
+                GetComponent<Image>().sprite = incorrectFlag;
+                return;
+            }
+
+            var tmp = GetComponentInChildren<TMP_Text>();
+            tmp.text = value.ToString();
+            switch (value)
+            {
+                // 1 = red, 2 = green, 3 = red, 4 = purple
+                // 5 = maroon, 6 = turquoise, 7 = black, 8 = Gray
+                case 1:
+                    tmp.color = new Color32(0, 0, 200, 255);
+                    break;
+                case 2:
+                    tmp.color = new Color32(0, 128, 0, 255);
+                    break;
+                case 3:
+                    tmp.color = new Color32(255, 0, 0, 255);
+                    break;
+                case 4:
+                    tmp.color = new Color32(75, 0, 130, 255);
+                    break;
+                case 5:
+                    tmp.color = new Color32(128, 0, 0, 255);
+                    break;
+                case 6:
+                    tmp.color = new Color32(0, 139, 139, 255);
+                    break;
+                case 7:
+                    tmp.color = new Color32(0, 0, 0, 255);
+                    break;
+                default:
+                    tmp.color = new Color32(200, 200, 200, 255);
+                    break;
+            }
         }
         GetComponent<Image>().sprite = clickedSquare;
-        // thisButton.interactable = false;
         
         if (value == 0 && !locked)
         {
