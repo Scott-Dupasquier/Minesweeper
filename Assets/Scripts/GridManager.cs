@@ -5,11 +5,15 @@ using System.Drawing; // Point
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 public class GridManager : MonoBehaviour
 {
     public GameObject cell;
     public GameObject[,] grid;
+    public TMP_Text bombsMarkedText;
+    public TMP_Text timerText;
     
     // Initialize grid variables
     private int rows;
@@ -24,6 +28,7 @@ public class GridManager : MonoBehaviour
     private bool finished;
 
     private const int numBombs = 99;
+    private int bombsMarked;
     // Start is called before the first frame update
     void Start()
     {
@@ -35,6 +40,8 @@ public class GridManager : MonoBehaviour
         buffer = 10;
 
         finished = false;
+        bombsMarked = 0;
+        bombsMarkedText.text = bombsMarked.ToString() + "/" + numBombs.ToString();
 
         // Set cell parent to Grid so it shows up on screen
         cell.transform.SetParent(GameObject.FindGameObjectWithTag("Grid").transform, false);
@@ -50,7 +57,7 @@ public class GridManager : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
+    {        
         if (!finished)
         {
             // Listen for a meaningful click
@@ -89,6 +96,13 @@ public class GridManager : MonoBehaviour
                 finished = true;
             }
         }
+        
+        if (PlayerPrefs.HasKey("restart"))
+        {
+            // Reload the scene to restart the game
+            PlayerPrefs.DeleteKey("restart");
+            SceneManager.LoadScene("GameScene");
+        }
     }
 
     private void RevealCells()
@@ -106,13 +120,24 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    // Updates a cell based on the specified action
     private void UpdateCell(string spriteToUse)
     {
         // Get selected GameObject (tile) and send the request to change the Sprite
-        // GameObject selected = EventSystem.current.currentSelectedGameObject;
-        GameObject selected = GetClickedGameObject();
-        var cManager = selected.GetComponent<CellManager>();
-        cManager.SetSprite(spriteToUse);
+        try
+        {
+            GameObject selected = GetClickedGameObject();
+            var cManager = selected.GetComponent<CellManager>();
+            cManager.SetSprite(spriteToUse);
+            if (spriteToUse == "rightclick" && cManager.GetCycleStatus() == "flag")
+            {
+                bombsMarkedText.text = (++bombsMarked).ToString() + "/" + numBombs.ToString();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e.ToString() + "Click did not occur in grid");
+        }
     }
 
     private GameObject GetClickedGameObject()

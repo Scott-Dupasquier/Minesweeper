@@ -36,6 +36,17 @@ public class CellManager : MonoBehaviour
 
     }
 
+    public void Reset()
+    {
+        Debug.Log("(" + col.ToString() + ", " + row.ToString() + ") reset");
+        cycleStatus = "default";
+        value = 0;
+        GetComponentInChildren<TMP_Text>().text = "";
+        GetComponent<Image>().sprite = defaultSquare;
+        revealed = false;
+        locked = false;
+    }
+
     public void InitializeValues(float cellSize, int y, int x)
     {
         var rectTransform = GetComponent<RectTransform>();
@@ -54,6 +65,11 @@ public class CellManager : MonoBehaviour
     public bool GetRevealed()
     {
         return revealed;
+    }
+
+    public string GetCycleStatus()
+    {
+        return cycleStatus;
     }
 
     public int GetRow()
