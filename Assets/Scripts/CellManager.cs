@@ -36,17 +36,6 @@ public class CellManager : MonoBehaviour
 
     }
 
-    public void Reset()
-    {
-        Debug.Log("(" + col.ToString() + ", " + row.ToString() + ") reset");
-        cycleStatus = "default";
-        value = 0;
-        GetComponentInChildren<TMP_Text>().text = "";
-        GetComponent<Image>().sprite = defaultSquare;
-        revealed = false;
-        locked = false;
-    }
-
     public void InitializeValues(float cellSize, int y, int x)
     {
         var rectTransform = GetComponent<RectTransform>();
@@ -116,8 +105,8 @@ public class CellManager : MonoBehaviour
     {
         if (value == -1)
         {
-            // Don't allow a reveal click on flag or ? (? can be revealed if game is over however)
-            if (cycleStatus == "flag" || (cycleStatus == "?" && !PlayerPrefs.HasKey("finished")))
+            // Don't allow a reveal click on flag
+            if (cycleStatus == "flag")
             {
                 return;
             }
@@ -143,6 +132,11 @@ public class CellManager : MonoBehaviour
             {
                 // Incorrectly marked this cell as a bomb
                 GetComponent<Image>().sprite = incorrectFlag;
+                return;
+            }
+            else if (cycleStatus == "?" && !PlayerPrefs.HasKey("finished"))
+            {
+                // Don't reveal a cell if marked ?, only reveal if game over
                 return;
             }
 

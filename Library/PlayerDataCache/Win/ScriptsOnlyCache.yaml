@@ -3,6 +3,7 @@ ScriptsOnlyBuild:
     Assembly-CSharp.dll:
     - CellManager
     - GridManager
+    - RestartButton
     Unity.2D.Tilemap.Editor.dll:
     - UnityEditor.Tilemaps.GridPaintingState
     - UnityEditor.Tilemaps.GridPaletteBrushes
@@ -76,6 +77,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 12896}
     - Class: 114
       Script: {instanceID: 13112}
+    - Class: 114
+      Script: {instanceID: 23712}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -251,7 +254,7 @@ ScriptsOnlyBuild:
     className: Shadow
   - hash:
       serializedVersion: 2
-      Hash: 74e3be56c978f13f2bd7da75ed92ac8d
+      Hash: 0bbc95779a527584aaa7388baa46e235
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GridManager
@@ -413,7 +416,7 @@ ScriptsOnlyBuild:
     className: BeforeAfterTestCommandState
   - hash:
       serializedVersion: 2
-      Hash: c1d0d4b6d9474e2007f3ffefdb8eaaa3
+      Hash: 91c9f5970edf94b615186f4813d3f3da
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: CellManager
@@ -525,6 +528,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: RestartButton
   platform: 5
   scenePathNames:
   - Assets/Scenes/GameScene.unity

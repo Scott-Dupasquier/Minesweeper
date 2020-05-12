@@ -10,10 +10,13 @@ using TMPro;
 
 public class GridManager : MonoBehaviour
 {
+        // This grid
+    public GameObject gridPanel;
     public GameObject cell;
     public GameObject[,] grid;
     public TMP_Text bombsMarkedText;
     public TMP_Text timerText;
+    public Button restartButton;
     
     // Initialize grid variables
     private int rows;
@@ -26,9 +29,13 @@ public class GridManager : MonoBehaviour
 
     // Keep track of if the game is over
     private bool finished;
+    private bool runTimer;
 
     private const int numBombs = 99;
     private int bombsMarked;
+    // toReveal contains the amount of safe spaces that still need to be revealed
+    private int toReveal;
+    private float timer;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,8 +47,12 @@ public class GridManager : MonoBehaviour
         buffer = 10;
 
         finished = false;
+        runTimer = false;
         bombsMarked = 0;
-        bombsMarkedText.text = bombsMarked.ToString() + "/" + numBombs.ToString();
+        bombsMarkedText.text = numBombs.ToString() + "/" + numBombs.ToString();
+        toReveal = (rows * cols) - numBombs;
+        timer = 0;
+        timerText.text = "0:00";
 
         // Set cell parent to Grid so it shows up on screen
         cell.transform.SetParent(GameObject.FindGameObjectWithTag("Grid").transform, false);
@@ -60,16 +71,25 @@ public class GridManager : MonoBehaviour
     {        
         if (!finished)
         {
+            // Update timer first
+            if (runTimer)
+            {
+                timer += Time.deltaTime;
+                timerText.text = ToTime(timer);
+            }
+
             // Listen for a meaningful click
             if (Input.GetMouseButtonDown(0))
             {
                 // Pressed
+                restartButton.GetComponent<RestartButton>().hold();
             }
 
             if (Input.GetMouseButtonUp(0))
             {
                 // Wants to reveal this location
                 UpdateCell("revealed");
+                restartButton.GetComponent<RestartButton>().release();
             }
             
             if (Input.GetMouseButtonUp(1))
@@ -90,10 +110,27 @@ public class GridManager : MonoBehaviour
 
             if (PlayerPrefs.HasKey("finished"))
             {
-                // Game has ended, reveal the board
-                RevealCells();
+                // Game has ended, reveal the board & stop timer
+                if (PlayerPrefs.GetString("finished") != "win")
+                {
+                    RevealCells();
+                    restartButton.GetComponent<RestartButton>().death();
+                }
+                else
+                {
+                    timerText.text = "You win!";
+                    restartButton.GetComponent<RestartButton>().win();
+                }
+
                 PlayerPrefs.DeleteKey("finished");
                 finished = true;
+                runTimer = false;
+            }
+
+            // When toReveal == 0, the player has won
+            if (toReveal == 0)
+            {
+                PlayerPrefs.SetString("finished", "win");
             }
         }
         
@@ -128,10 +165,34 @@ public class GridManager : MonoBehaviour
         {
             GameObject selected = GetClickedGameObject();
             var cManager = selected.GetComponent<CellManager>();
-            cManager.SetSprite(spriteToUse);
-            if (spriteToUse == "rightclick" && cManager.GetCycleStatus() == "flag")
+            if (cManager.GetRevealed())
             {
-                bombsMarkedText.text = (++bombsMarked).ToString() + "/" + numBombs.ToString();
+                // Cell revealed already, nothing to do
+                return;
+            }
+
+            // Start the timer on first click
+            if (!runTimer)
+            {
+                runTimer = true;
+            }
+
+            cManager.SetSprite(spriteToUse);
+            var cycleStatus = cManager.GetCycleStatus();
+            if (spriteToUse == "rightclick" && cycleStatus == "flag")
+            {
+                ++bombsMarked;
+            }
+            else if (spriteToUse == "rightclick" && cycleStatus == "?")
+            {
+                --bombsMarked;
+            }
+            bombsMarkedText.text = (numBombs - bombsMarked).ToString() + "/" + numBombs.ToString();
+
+            if (cManager.GetRevealed())
+            {
+                // Just revealed this cell, one less to reveal
+                --toReveal;
             }
         }
         catch (Exception e)
@@ -314,6 +375,17 @@ public class GridManager : MonoBehaviour
 
         // Recurse
         ExpandZeros(expanded, cellsToExpand);
+    }
+
+    // ToTime converts a float of seconds and milliseconds into minutes and seconds
+    // time should be in the format of 112.48729 (seconds.milliseconds)
+    private string ToTime(float time)
+    {
+        // Round down, don't care about milliseconds
+        var secs = Math.Floor(time);
+        var mins = Math.Floor(secs / 60);
+        secs %= 60;
+        return mins.ToString() + ":" + secs.ToString().PadLeft(2, '0');
     }
 
     // Test function for printing out board
