@@ -14,4 +14,11 @@ https://www.flaticon.com/free-icon/mine_486846?term=mine&page=1&position=57
 Timer icon (author: https://www.flaticon.com/authors/flat-icons) \
 https://www.flaticon.com/free-icon/deadline_1479689?term=clock&page=1&position=65
 
-Digging sound (author: InspectorJ (www.jshaw.co.uk)) of Freesound.org
+Main theme (author: http://dig.ccmixter.org/people/cdk) \
+http://dig.ccmixter.org/files/cdk/21929
+
+Reveal tile sound (author: https://freesound.org/people/doorajar/) \
+https://freesound.org/people/doorajar/sounds/427074/
+
+Explosion sound (author: https://freesound.org/people/befig/) \
+https://freesound.org/people/befig/sounds/455530/
