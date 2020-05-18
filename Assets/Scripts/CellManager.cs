@@ -24,10 +24,13 @@ public class CellManager : MonoBehaviour
     private bool revealed = false;
     // Status of the "right click cycle" (default -> flag -> ? -> etc.)
     private string cycleStatus;
+    private AudioManager audioManager;
+
     // Start is called before the first frame update
     void Start()
     {
         cycleStatus = "default";
+        audioManager = FindObjectOfType<AudioManager>();
     }
 
     // Update is called once per frame
@@ -103,6 +106,7 @@ public class CellManager : MonoBehaviour
 
     public void Reveal()
     {
+        var finished = PlayerPrefs.HasKey("finished");
         if (value == -1)
         {
             // Don't allow a reveal click on flag
@@ -111,7 +115,7 @@ public class CellManager : MonoBehaviour
                 return;
             }
 
-            if (PlayerPrefs.HasKey("finished"))
+            if (finished)
             {
                 // We're revealing the board
                 GetComponent<Image>().sprite = bomb;
@@ -119,6 +123,7 @@ public class CellManager : MonoBehaviour
             else
             {
                 // Hit a bomb, game finished
+                audioManager.PlaySound("explosion");
                 GetComponent<Image>().sprite = clickedBomb;
                 PlayerPrefs.SetString("finished", "clickedbomb");
             }
@@ -128,16 +133,21 @@ public class CellManager : MonoBehaviour
         }
         else if (value != 0)
         {
-            if (cycleStatus == "flag")
+            if (cycleStatus == "flag" && finished)
             {
                 // Incorrectly marked this cell as a bomb
                 GetComponent<Image>().sprite = incorrectFlag;
                 return;
             }
-            else if (cycleStatus == "?" && !PlayerPrefs.HasKey("finished"))
+            else if (cycleStatus == "?" && !finished)
             {
                 // Don't reveal a cell if marked ?, only reveal if game over
                 return;
+            }
+
+            if (!finished)
+            {
+                audioManager.PlaySound("dig");
             }
 
             var tmp = GetComponentInChildren<TMP_Text>();
