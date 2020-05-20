@@ -22,25 +22,25 @@ public class RestartButton : MonoBehaviour
     }
 
     // Call when a bomb has been hit
-    public void death()
+    public void Death()
     {
         GetComponent<Image>().sprite = deadFace;
     }
 
     // Call on a win to update face to the sunglasses face
-    public void win()
+    public void Win()
     {
         GetComponent<Image>().sprite = sunglasses;
     }
 
     // Set the face to have an open mouth while waiting to reveal a tiles
-    public void hold()
+    public void Hold()
     {
         GetComponent<Image>().sprite = openMouth;
     }
 
     // Call when mouse button has been released to reset the face
-    public void release()
+    public void Release()
     {
         GetComponent<Image>().sprite = happyFace;
     }

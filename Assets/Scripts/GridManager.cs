@@ -14,7 +14,7 @@ public class GridManager : MonoBehaviour
     public GameObject gridPanel;
     public GameObject cell;
     public GameObject[,] grid;
-    public TMP_Text bombsMarkedText;
+    public TMP_Text bombsRemainingText;
     public TMP_Text timerText;
     public Button restartButton;
     
@@ -30,6 +30,7 @@ public class GridManager : MonoBehaviour
     // Keep track of if the game is over
     private bool finished;
     private bool runTimer;
+    private bool firstClick;
 
     private const int numBombs = 99;
     private int bombsMarked;
@@ -48,8 +49,9 @@ public class GridManager : MonoBehaviour
 
         finished = false;
         runTimer = false;
+        firstClick = true;
         bombsMarked = 0;
-        bombsMarkedText.text = numBombs.ToString() + "/" + numBombs.ToString();
+        bombsRemainingText.text = numBombs.ToString() + "/" + numBombs.ToString();
         toReveal = (rows * cols) - numBombs;
         timer = 0;
         timerText.text = "0:00";
@@ -78,24 +80,13 @@ public class GridManager : MonoBehaviour
                 timerText.text = ToTime(timer);
             }
 
-            // Listen for a meaningful click
             if (Input.GetMouseButtonDown(0))
             {
-                // Pressed
-                restartButton.GetComponent<RestartButton>().hold();
+                restartButton.GetComponent<RestartButton>().Hold();
             }
-
-            if (Input.GetMouseButtonUp(0))
+            else if (Input.GetMouseButtonUp(0))
             {
-                // Wants to reveal this location
-                UpdateCell("revealed");
-                restartButton.GetComponent<RestartButton>().release();
-            }
-            
-            if (Input.GetMouseButtonUp(1))
-            {
-                // Update right click cycle
-                UpdateCell("rightclick");
+                restartButton.GetComponent<RestartButton>().Release();
             }
 
             if (PlayerPrefs.HasKey("row"))
@@ -114,12 +105,12 @@ public class GridManager : MonoBehaviour
                 if (PlayerPrefs.GetString("finished") != "win")
                 {
                     RevealCells();
-                    restartButton.GetComponent<RestartButton>().death();
+                    restartButton.GetComponent<RestartButton>().Death();
                 }
                 else
                 {
                     timerText.text = "You win!";
-                    restartButton.GetComponent<RestartButton>().win();
+                    restartButton.GetComponent<RestartButton>().Win();
                 }
 
                 PlayerPrefs.DeleteKey("finished");
@@ -135,6 +126,27 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    // On first click in grid start the timer and populate the board
+    public void FirstClick()
+    {
+        if (!firstClick)
+        {
+            // Only needs to be done once
+            return;
+        }
+
+        runTimer = true;
+
+        firstClick = false;
+    }
+
+    public void AdjustBombAmt(int num)
+    {
+        Debug.Log("true");
+        bombsMarked += num;
+        bombsRemainingText.text = (numBombs - bombsMarked).ToString() + "/" + numBombs.ToString();
+    }
+
     private void RevealCells()
     {
         for (int row = 0; row < rows; ++row)
@@ -148,59 +160,6 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
-    }
-
-    // Updates a cell based on the specified action
-    private void UpdateCell(string spriteToUse)
-    {
-        // Get selected GameObject (tile) and send the request to change the Sprite
-        try
-        {
-            GameObject selected = GetClickedGameObject();
-            var cManager = selected.GetComponent<CellManager>();
-            if (cManager.GetRevealed())
-            {
-                // Cell revealed already, nothing to do
-                return;
-            }
-
-            // Start the timer on first click
-            if (!runTimer)
-            {
-                runTimer = true;
-            }
-
-            cManager.SetSprite(spriteToUse);
-            var cycleStatus = cManager.GetCycleStatus();
-            if (spriteToUse == "rightclick" && cycleStatus == "flag")
-            {
-                ++bombsMarked;
-            }
-            else if (spriteToUse == "rightclick" && cycleStatus == "?")
-            {
-                --bombsMarked;
-            }
-            bombsMarkedText.text = (numBombs - bombsMarked).ToString() + "/" + numBombs.ToString();
-
-            if (cManager.GetRevealed())
-            {
-                // Just revealed this cell, one less to reveal
-                --toReveal;
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.Log(e.ToString() + "Click did not occur in grid");
-        }
-    }
-
-    private GameObject GetClickedGameObject()
-    {
-        // Get the relative position of the mouse to the first cell
-        Vector2 relPos = Input.mousePosition - grid[0, 0].transform.position;
-        var col = (int) Math.Floor(relPos[0] / cellSize);
-        var row = (int) Math.Floor(relPos[1] / cellSize * -1);
-        return grid[row, col];
     }
 
     private void GetGridSize()
