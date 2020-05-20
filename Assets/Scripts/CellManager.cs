@@ -111,7 +111,7 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        var finished = PlayerPrefs.HasKey("finished");
+        var finished = grid.GetComponent<GridManager>().GetFinished();
         if (value == -1)
         {
             // Don't allow a reveal click on flag
@@ -120,6 +120,7 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
                 return;
             }
 
+            revealed = true;
             if (finished)
             {
                 // We're revealing the board
@@ -129,13 +130,13 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
             else
             {
                 // Hit a bomb, game finished
+                GetComponent<Image>().sprite = clickedBomb;
                 animator.SetTrigger("Explode");
                 audioManager.PlaySound("explosion");
-                GetComponent<Image>().sprite = clickedBomb;
-                PlayerPrefs.SetString("finished", "clickedbomb");
+                grid.GetComponent<GridManager>().GameOver("clickedbomb");
+                grid.GetComponent<GridManager>().RevealCells(col, row);
             }
 
-            revealed = true;
             return;
         }
         else if (value != 0)
@@ -191,10 +192,9 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
         }
         GetComponent<Image>().sprite = clickedSquare;
         
-        if (value == 0 && !locked)
+        if (value == 0 && !locked && !finished)
         {
-            PlayerPrefs.SetInt("row", row);
-            PlayerPrefs.SetInt("col", col);
+            grid.GetComponent<GridManager>().RevealZeros(col, row);
         }
         revealed = true;
     }

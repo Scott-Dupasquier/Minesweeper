@@ -60,12 +60,6 @@ public class GridManager : MonoBehaviour
         cell.transform.SetParent(GameObject.FindGameObjectWithTag("Grid").transform, false);
         GetGridSize();
         GenerateGrid();
-
-        if (PlayerPrefs.HasKey("row"))
-        {
-            PlayerPrefs.DeleteKey("row");
-            PlayerPrefs.DeleteKey("col");
-        }
     }
 
     // Update is called once per frame
@@ -89,41 +83,35 @@ public class GridManager : MonoBehaviour
                 restartButton.GetComponent<RestartButton>().Release();
             }
 
-            if (PlayerPrefs.HasKey("row"))
-            {
-                var row = PlayerPrefs.GetInt("row");
-                var col = PlayerPrefs.GetInt("col");
-                List<GameObject> cellsToExpand = new List<GameObject> {grid[row, col]};
-                ExpandZeros(new List<Point>(), cellsToExpand);
-                PlayerPrefs.DeleteKey("row");
-                PlayerPrefs.DeleteKey("col");
-            }
-
-            if (PlayerPrefs.HasKey("finished"))
-            {
-                // Game has ended, reveal the board & stop timer
-                if (PlayerPrefs.GetString("finished") != "win")
-                {
-                    RevealCells();
-                    restartButton.GetComponent<RestartButton>().Death();
-                }
-                else
-                {
-                    timerText.text = "You win!";
-                    restartButton.GetComponent<RestartButton>().Win();
-                }
-
-                PlayerPrefs.DeleteKey("finished");
-                finished = true;
-                runTimer = false;
-            }
-
             // When toReveal == 0, the player has won
             if (toReveal == 0)
             {
                 PlayerPrefs.SetString("finished", "win");
             }
         }
+    }
+
+    public void GameOver(string condition)
+    {
+        // Game has ended, reveal the board & stop timer
+        if (condition != "win")
+        {
+            // RevealCells();
+            restartButton.GetComponent<RestartButton>().Death();
+        }
+        else
+        {
+            timerText.text = "You win!";
+            restartButton.GetComponent<RestartButton>().Win();
+        }
+
+        finished = true;
+        runTimer = false;
+    }
+
+    public bool GetFinished()
+    {
+        return finished;
     }
 
     // On first click in grid start the timer and populate the board
@@ -142,24 +130,31 @@ public class GridManager : MonoBehaviour
 
     public void AdjustBombAmt(int num)
     {
-        Debug.Log("true");
         bombsMarked += num;
         bombsRemainingText.text = (numBombs - bombsMarked).ToString() + "/" + numBombs.ToString();
     }
 
-    private void RevealCells()
+    public void RevealCells(int col, int row)
     {
-        for (int row = 0; row < rows; ++row)
-        {
-            for (int col = 0; col < cols; ++col)
-            {
-                var cManager = grid[row, col].GetComponent<CellManager>();
-                if (!cManager.GetRevealed())
-                {
-                    cManager.Reveal();
-                }
-            }
-        }
+        // for (row = 0; row < rows; ++row)
+        // {
+        //     for (col = 0; col < cols; ++col)
+        //     {
+        //         var cManager = grid[row, col].GetComponent<CellManager>();
+        //         if (!cManager.GetRevealed())
+        //         {
+        //             cManager.Reveal();
+        //         }
+        //     }
+        // }
+        List<GameObject> cellsToExpand = new List<GameObject> {grid[row, col]};
+        StartCoroutine(Explode(new List<Point>(), cellsToExpand));
+    }
+
+    public void RevealZeros(int col, int row)
+    {
+        List<GameObject> cellsToExpand = new List<GameObject> {grid[row, col]};
+        ExpandZeros(new List<Point>(), cellsToExpand);
     }
 
     private void GetGridSize()
@@ -327,6 +322,53 @@ public class GridManager : MonoBehaviour
 
         // Recurse
         ExpandZeros(expanded, cellsToExpand);
+    }
+
+    // Explode out from an area
+    private IEnumerator Explode(List<Point> expanded, List<GameObject> cellsToExpand)
+    {
+        // squareSize is relative to explosion area
+        var expandSize = 1;
+
+        while (cellsToExpand.Count != 0)
+        {
+            // Get the current cell we're expanding and it's information
+            var currentCell = cellsToExpand[0];
+            var cManager = currentCell.GetComponent<CellManager>();
+            var row = cManager.GetRow();
+            var col = cManager.GetCol();
+            var coords = new Point(col, row);
+
+            // Add cell coords to ones we've expanded
+            expanded.Add(coords);
+            cellsToExpand.Remove(currentCell);
+
+            // Add all new neighbours to cellsToExpand
+            foreach (Point p in GetNeighbours(col, row))
+            {
+                var nbrCell = grid[p.Y, p.X];
+
+                // Find out if the neighbour is new to us
+                if (!expanded.Contains(p) && !cellsToExpand.Contains(nbrCell))
+                {
+                    cellsToExpand.Add(nbrCell);
+                }
+            }
+
+            // Reveal cell
+            cManager.Reveal();
+
+            // Next area we want expanded
+            var x = Math.Min(cols, col + expandSize) - Math.Max(0, col - expandSize);
+            var y = Math.Min(rows, expandSize + row) - Math.Max(0, row - expandSize); 
+            if (expanded.Count >= x * y)
+            {
+                yield return new WaitForSeconds(Math.Min(1/expandSize, 0.05f));
+                expandSize += 1;
+                // Debug.Log(x.ToString() + ", " + y.ToString());
+            }
+            // yield return null;
+        }
     }
 
     // ToTime converts a float of seconds and milliseconds into minutes and seconds
