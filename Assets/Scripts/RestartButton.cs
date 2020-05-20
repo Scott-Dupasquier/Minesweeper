@@ -44,10 +44,4 @@ public class RestartButton : MonoBehaviour
     {
         GetComponent<Image>().sprite = happyFace;
     }
-
-    public void Restart()
-    {
-        // Just a signal the GridManager Update method will take to know to restart
-        PlayerPrefs.SetString("restart", "true");
-    }
 }

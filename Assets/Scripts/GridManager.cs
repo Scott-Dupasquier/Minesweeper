@@ -133,13 +133,6 @@ public class GridManager : MonoBehaviour
                 PlayerPrefs.SetString("finished", "win");
             }
         }
-        
-        if (PlayerPrefs.HasKey("restart"))
-        {
-            // Reload the scene to restart the game
-            PlayerPrefs.DeleteKey("restart");
-            SceneManager.LoadScene("GameScene");
-        }
     }
 
     private void RevealCells()
