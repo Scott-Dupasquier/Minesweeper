@@ -35,7 +35,7 @@ public class GridManager : MonoBehaviour
     private bool runTimer;
     private bool populated;
 
-    private const int numBombs = 50;
+    private const int numBombs = 99;
     private int bombsMarked;
     private float timer;
     // Start is called before the first frame update
@@ -194,7 +194,7 @@ public class GridManager : MonoBehaviour
         List<Point> nbrs;
 
         // Make an initial area size to be marked safe
-        var safeSize = r.Next(1, 10);
+        var safeSize = r.Next(1, 6);
         List<Point> safe = new List<Point>();
         List<Point> possible = new List<Point>();
         Point point;

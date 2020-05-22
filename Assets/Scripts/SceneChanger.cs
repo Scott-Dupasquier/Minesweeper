@@ -22,7 +22,7 @@ public class SceneChanger : MonoBehaviour
 
     private IEnumerator Load(string sceneName)
     {
-        fade.SetTrigger("Start");
+        fade.SetTrigger("CloseScene");
         
         // Wait 1 second for animation
         yield return new WaitForSeconds(1);
