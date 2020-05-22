@@ -51,11 +51,20 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
     {
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            Reveal();
+            var gManager = grid.GetComponent<GridManager>();
+            gManager.PopulateBoard(col, row);
+
+            if (!revealed)
+            {
+                Reveal();
+            }
         }
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
-            UpdateRightClick();
+            if (!revealed)
+            {
+                UpdateRightClick();
+            }
         }
     }
 
@@ -191,11 +200,13 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
             }
         }
         GetComponent<Image>().sprite = clickedSquare;
+        var gManager = grid.GetComponent<GridManager>();
         
         if (value == 0 && !locked && !finished)
         {
-            grid.GetComponent<GridManager>().RevealZeros(col, row);
+            gManager.RevealZeros(col, row);
         }
+
         revealed = true;
     }
 
