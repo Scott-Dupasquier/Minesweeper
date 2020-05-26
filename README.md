@@ -21,6 +21,7 @@ https://www.flaticon.com/authors/pixel-perfect
 https://www.flaticon.com/authors/freepik
 * Home icon
 * Speaker on/off icon
+* Back button
 
 https://www.flaticon.com/authors/becris
 * Music icon
