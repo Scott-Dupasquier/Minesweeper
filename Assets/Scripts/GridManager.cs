@@ -25,6 +25,8 @@ public class GridManager : MonoBehaviour
     private int rows;
     private int cols;
     private int[,] board;
+    // Max expand size on initial click
+    private int maxExpand;
 
     // buffer size on the side of the grid
     private int buffer;
@@ -35,14 +37,40 @@ public class GridManager : MonoBehaviour
     private bool runTimer;
     private bool populated;
 
-    private const int numBombs = 99;
+    private int numBombs;
     private int bombsMarked;
     private float timer;
+
+    void Awake()
+    {
+        var difficulty = PlayerPrefs.GetString("difficulty");
+
+        if (difficulty == "easy")
+        {
+            rows = 8;
+            cols = 8;
+            numBombs = 10;
+            maxExpand = 1;
+        }
+        else if (difficulty == "intermediate")
+        {
+            rows = 16;
+            cols = 16;
+            numBombs = 40;
+            maxExpand = 2;
+        }
+        else
+        {
+            rows = 16;
+            cols = 30;
+            numBombs = 99;
+            maxExpand = 6;
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        rows = 16;
-        cols = 31;
         board = new int[rows, cols];
         grid = new GameObject[rows, cols];
 
@@ -95,7 +123,6 @@ public class GridManager : MonoBehaviour
         // Game has ended, reveal the board & stop timer
         if (condition != "win")
         {
-            // RevealCells();
             restartButton.GetComponent<RestartButton>().Death();
         }
         else
@@ -106,6 +133,8 @@ public class GridManager : MonoBehaviour
 
             winText.text = "You beat the game in " + ToTime(timer) + ", well done!";
             restartButton.GetComponent<RestartButton>().Win();
+
+            MarkAllSafe();
         }
 
         finished = true;
@@ -194,7 +223,7 @@ public class GridManager : MonoBehaviour
         List<Point> nbrs;
 
         // Make an initial area size to be marked safe
-        var safeSize = r.Next(1, 6);
+        var safeSize = r.Next(1, maxExpand);
         List<Point> safe = new List<Point>();
         List<Point> possible = new List<Point>();
         Point point;
@@ -229,7 +258,7 @@ public class GridManager : MonoBehaviour
             var currentCell = grid[randY, randX];
             var cManager = currentCell.GetComponent<CellManager>();
 
-            if (cManager.GetValue() == 0 && !possible.Contains(point))
+            if (cManager.GetValue() == 0 && !possible.Contains(point) && !safe.Contains(point))
             {
                 // Space unoccupied, plant bomb
                 cManager.SetValue(-1);
@@ -433,6 +462,23 @@ public class GridManager : MonoBehaviour
         if (unrevealed == numBombs)
         {
             GameOver("win");
+        }
+    }
+
+    // Any cells the player didn't mark during the game should have a flag on it
+    private void MarkAllSafe()
+    {
+        // Any un-revealed cells at this point are bombs
+        for (int row = 0; row < rows; ++row)
+        {
+            for (int col = 0; col < cols; ++col)
+            {
+                var cManager = grid[row, col].GetComponent<CellManager>();
+                if (!cManager.GetRevealed())
+                {
+                    cManager.MarkSafe();
+                }
+            }
         }
     }
 

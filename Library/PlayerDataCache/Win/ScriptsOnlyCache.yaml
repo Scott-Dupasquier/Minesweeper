@@ -4,8 +4,10 @@ ScriptsOnlyBuild:
     - AudioManager
     - CellManager
     - GridManager
+    - MenuManager
     - RestartButton
     - SceneChanger
+    - SetDifficulty
     Unity.2D.Tilemap.Editor.dll:
     - UnityEditor.Tilemaps.GridPaintingState
     - UnityEditor.Tilemaps.GridPaletteBrushes
@@ -93,6 +95,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 13012}
     - Class: 114
       Script: {instanceID: 13116}
+    - Class: 114
+      Script: {instanceID: 16942}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -145,6 +149,8 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 11392}
     - Class: 114
+      Script: {instanceID: 11494}
+    - Class: 114
       Script: {instanceID: 11590}
     - Class: 114
       Script: {instanceID: 11810}
@@ -166,6 +172,10 @@ ScriptsOnlyBuild:
       Script: {instanceID: 13012}
     - Class: 114
       Script: {instanceID: 13116}
+    - Class: 114
+      Script: {instanceID: 16942}
+    - Class: 114
+      Script: {instanceID: 42770}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -521,7 +531,7 @@ ScriptsOnlyBuild:
     className: BeforeAfterTestCommandState
   - hash:
       serializedVersion: 2
-      Hash: 930c66eed6c730359a17c56f33aed77d
+      Hash: 13afade6e5fe55441c1bda6200f8767f
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: CellManager
@@ -633,6 +643,18 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
+  - hash:
+      serializedVersion: 2
+      Hash: 36fe37a91ff8b11fea41c42642d92568
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: MenuManager
+  - hash:
+      serializedVersion: 2
+      Hash: 2133a7082bdf29d40dc3b055eba70bf3
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: SetDifficulty
   platform: 5
   scenePathNames:
   - Assets/Scenes/MainMenu.unity

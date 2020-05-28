@@ -9,6 +9,9 @@ public class AudioManager : MonoBehaviour
 
     public static AudioManager audioManager;
 
+    private string playMusic;
+    private string playSFX;
+
     void Awake()
     {
         // Singleton object, don't repeat
@@ -33,20 +36,78 @@ public class AudioManager : MonoBehaviour
             s.source.pitch = s.pitch;
             s.source.loop = s.loop;
         }
+
+        // Make default PlayerPrefs if they don't exist
+        if (!PlayerPrefs.HasKey("music"))
+        {
+            PlayerPrefs.SetString("music", "on");
+            PlayerPrefs.SetString("sfx", "on");
+        }
     }
 
     void Start()
     {
+        playMusic = PlayerPrefs.GetString("music");
+        playSFX = PlayerPrefs.GetString("sfx");
+
         // Start the main theme music
-        PlaySound("theme");
+        if (playMusic == "on")
+        {
+            PlaySound("theme");
+        }
     }
 
+    // Toggle the music on and off
+    public void ToggleMusic()
+    {
+        if (playMusic == "on")
+        {
+            playMusic = "off";
+            PauseSound("theme");
+        }
+        else
+        {
+            playMusic = "on";
+            PlaySound("theme");
+        }
+        PlayerPrefs.SetString("music", playMusic);
+    }
+
+    // Toggle sfx on and off
+    public void ToggleSFX()
+    {
+        if (playSFX == "on")
+        {
+            playSFX = "off";
+        }
+        else
+        {
+            playSFX = "on";
+        }
+        PlayerPrefs.SetString("sfx", playSFX);
+    }
+
+
+    // Play a sound
     public void PlaySound(string clipName)
+    {
+        Sound toPlay = Array.Find(sounds, sound => sound.clipName == clipName);
+        
+        var cond1 = playSFX == "on" && clipName != "theme";
+        var cond2 = playMusic == "on" && clipName == "theme";
+        if (toPlay != null && (cond1 || cond2))
+        {
+            toPlay.source.Play();
+        }
+    }
+
+    // Pause a sound
+    private void PauseSound(string clipName)
     {
         Sound toPlay = Array.Find(sounds, sound => sound.clipName == clipName);
         if (toPlay != null)
         {
-            toPlay.source.Play();
+            toPlay.source.Pause();
         }
     }
 }

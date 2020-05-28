@@ -21,8 +21,6 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
     public Sprite flag;
     public Sprite incorrectFlag;
 
-    public Button restartButton;
-
     private int value;
     private int row;
     private int col;
@@ -39,12 +37,6 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
     {
         cycleStatus = "default";
         audioManager = FindObjectOfType<AudioManager>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
     
     public void OnPointerClick (PointerEventData eventData)
@@ -210,8 +202,22 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
         revealed = true;
     }
 
+    // Mark a cell as safe at the end of the game
+    public void MarkSafe()
+    {
+        GetComponent<Image>().sprite = flag;
+        cycleStatus = "flag";
+        grid.GetComponent<GridManager>().AdjustBombAmt(1);
+    }
+
     private void UpdateRightClick()
     {
+        // Check if the game is finished (making the action invalid)
+        if (grid.GetComponent<GridManager>().GetFinished())
+        {
+            return;
+        }
+
         if (cycleStatus == "default")
         {
             GetComponent<Image>().sprite = flag;
