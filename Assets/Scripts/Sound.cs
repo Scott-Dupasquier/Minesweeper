@@ -6,6 +6,7 @@ using UnityEngine.Audio;
 [Serializable]
 public class Sound
 {
+    // Basic variables for a sound clip to be played
     public AudioClip clip;
 
     public string clipName;

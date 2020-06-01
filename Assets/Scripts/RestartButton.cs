@@ -5,21 +5,11 @@ using UnityEngine.UI;
 
 public class RestartButton : MonoBehaviour
 {
+    // Load possible sprites for the face
     public Sprite happyFace;
     public Sprite openMouth;
     public Sprite deadFace;
     public Sprite sunglasses;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     // Call when a bomb has been hit
     public void Death()

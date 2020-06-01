@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
+// Each cell object has a cell manager to control what should happen on clicks
+// or other events
 public class CellManager : MonoBehaviour, IPointerClickHandler
 {
     // Main grid
@@ -13,7 +15,7 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
 
     public Animator animator;
 
-    // Load images
+    // Possible images for a cell
     public Sprite clickedSquare;
     public Sprite defaultSquare;
     public Sprite bomb;
@@ -28,11 +30,10 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
     private bool locked = false;
     // Avoid revealing the cell twice (just in case)
     private bool revealed = false;
-    // Status of the "right click cycle" (default -> flag -> ? -> etc.)
+    // Status of the "right click cycle" (default -> flag -> ? -> repeat)
     private string cycleStatus;
     private AudioManager audioManager;
 
-    // Start is called before the first frame update
     void Start()
     {
         cycleStatus = "default";
@@ -43,7 +44,10 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
     {
         if (eventData.button == PointerEventData.InputButton.Left)
         {
+            // Left click, trying to reveal this cell
             var gManager = grid.GetComponent<GridManager>();
+
+            // Populate the board if it hasn't been already
             gManager.PopulateBoard(col, row);
 
             if (!revealed)
@@ -53,6 +57,7 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
         }
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
+            // Right click, update the cycle if the cell isn't revealed
             if (!revealed)
             {
                 UpdateRightClick();
@@ -60,8 +65,10 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
         }
     }
 
+    // Called by the grid manager to pass in this cells particular values
     public void InitializeValues(float cellSize, int y, int x)
     {
+        // Resize the cell to fit the predetermined size
         var rectTransform = GetComponent<RectTransform>();
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellSize);
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, cellSize);
@@ -70,6 +77,7 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
         col = x;
     }
 
+    // Some basic getters/setters
     public int GetValue()
     {
         return value;
@@ -105,6 +113,7 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
         value = newValue;
     }
 
+    // Reveal a cell either at the end of the game or when the person clicks
     public void Reveal()
     {
         if (revealed)
@@ -130,12 +139,15 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
             }
             else
             {
-                // Hit a bomb, game finished
-                GetComponent<Image>().sprite = clickedBomb;
-                animator.SetTrigger("Explode");
-                audioManager.PlaySound("explosion");
-                grid.GetComponent<GridManager>().GameOver("clickedbomb");
-                grid.GetComponent<GridManager>().RevealCells(col, row);
+                if (cycleStatus != "?")
+                {
+                    // Hit a bomb, game finished
+                    GetComponent<Image>().sprite = clickedBomb;
+                    animator.SetTrigger("Explode");
+                    audioManager.PlaySound("explosion");
+                    grid.GetComponent<GridManager>().GameOver("clickedbomb");
+                    grid.GetComponent<GridManager>().RevealCells(col, row);
+                }
             }
 
             return;
@@ -159,6 +171,7 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
                 audioManager.PlaySound("dig");
             }
 
+            // Colour the number in the cell
             var tmp = GetComponentInChildren<TMP_Text>();
             tmp.text = value.ToString();
             switch (value)
@@ -196,6 +209,7 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
         
         if (value == 0 && !locked && !finished)
         {
+            // Expand zeros around this cell
             gManager.RevealZeros(col, row);
         }
 
@@ -218,6 +232,7 @@ public class CellManager : MonoBehaviour, IPointerClickHandler
             return;
         }
 
+        // Otherwise move to the next phase in the cycle
         if (cycleStatus == "default")
         {
             GetComponent<Image>().sprite = flag;

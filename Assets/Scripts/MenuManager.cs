@@ -6,15 +6,13 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
-    // Singleton object
-    public static MenuManager menuManager;
-
     // Sprites for toggling music/sfx
     public Sprite musicOn;
     public Sprite musicOff;
     public Sprite sfxOn;
     public Sprite sfxOff;
 
+    // Buttons in the menu
     public Button music;
     public Button sfx;
     public Button home;
@@ -29,19 +27,23 @@ public class MenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Get the AudioManager and SceneChanger as they're used heavily for the menu
         open = false;
         audioManager = FindObjectOfType<AudioManager>();
         sceneChanger = FindObjectOfType<SceneChanger>();
 
+        // Set images
         UpdateMusicImage();
         UpdateSFXImage();
 
+        // Home button is inactive if they're already on the main menu
         if (SceneManager.GetActiveScene().name == "MainMenu")
         {
             home.interactable = false;
         }
     }
 
+    // Opens or closes the menu
     public void ToggleMenu()
     {
         if (open)
@@ -79,6 +81,7 @@ public class MenuManager : MonoBehaviour
         UpdateSFXImage();
     }
 
+    // Sets the music button image based on whether the music is on or off
     private void UpdateMusicImage()
     {
         if (PlayerPrefs.GetString("music") == "on")
@@ -91,6 +94,7 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    // Sets the sfx button image based on whether the music is on or off
     private void UpdateSFXImage()
     {
         if (PlayerPrefs.GetString("sfx") == "on")

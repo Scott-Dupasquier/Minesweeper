@@ -8,6 +8,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using TMPro;
 
+// This class is where most events are controlled
+// The grid manager maintains all cells as a whole
 public class GridManager : MonoBehaviour
 {
     // This grid
@@ -24,7 +26,6 @@ public class GridManager : MonoBehaviour
     // Initialize grid variables
     private int rows;
     private int cols;
-    private int[,] board;
     // Max expand size on initial click
     private int maxExpand;
 
@@ -37,14 +38,19 @@ public class GridManager : MonoBehaviour
     private bool runTimer;
     private bool populated;
 
+    // Total amount of bombs
     private int numBombs;
+    // Amount of bombs the player has marked
     private int bombsMarked;
     private float timer;
 
     void Awake()
     {
+        // Set some initial variables based on the decided difficults
         var difficulty = PlayerPrefs.GetString("difficulty");
 
+        // maxExpand determines the amount of cells to be revealed on first click.
+        // A higher number means a higher change for a large expansion
         if (difficulty == "easy")
         {
             rows = 8;
@@ -68,14 +74,15 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    // Start is called before the first frame update
     void Start()
     {
-        board = new int[rows, cols];
+        // Make empty grid
         grid = new GameObject[rows, cols];
 
+        // Buffer for the grid (in pixels)
         buffer = 10;
 
+        // Initialize basic variables
         finished = false;
         runTimer = false;
         populated = false;
@@ -92,6 +99,7 @@ public class GridManager : MonoBehaviour
         GetGridSize();
         GenerateGrid();
 
+        // Check for a win regularly
         InvokeRepeating("CheckWin", 1.0f, 0.3f);
     }
 
@@ -107,6 +115,7 @@ public class GridManager : MonoBehaviour
                 timerText.text = ToTime(timer);
             }
 
+            // Update the face to reflect the users action
             if (Input.GetMouseButtonDown(0))
             {
                 restartButton.GetComponent<RestartButton>().Hold();
@@ -118,6 +127,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    // Called when the game ends in any way
     public void GameOver(string condition)
     {
         // Game has ended, reveal the board & stop timer
@@ -134,9 +144,11 @@ public class GridManager : MonoBehaviour
             winText.text = "You beat the game in " + ToTime(timer) + ", well done!";
             restartButton.GetComponent<RestartButton>().Win();
 
+            // Any cells that the player didn't mark should be marked as safe
             MarkAllSafe();
         }
 
+        // Update variables accordingly
         finished = true;
         runTimer = false;
     }
@@ -146,6 +158,7 @@ public class GridManager : MonoBehaviour
         return finished;
     }
 
+    // Adjust the bomb amount by adding or removing a bomb
     public void AdjustBombAmt(int num)
     {
         bombsMarked += num;
@@ -155,6 +168,7 @@ public class GridManager : MonoBehaviour
     // Called by a cell manager when a bomb is hit and we need to reveal the board
     public void RevealCells(int col, int row)
     {
+        // Initial list is the selected cell
         List<GameObject> cellsToExpand = new List<GameObject> {grid[row, col]};
         StartCoroutine(Explode(new List<Point>(), cellsToExpand));
     }
@@ -162,6 +176,7 @@ public class GridManager : MonoBehaviour
     // Called by a cell manager when a 0 is revealed by the player
     public void RevealZeros(int col, int row)
     {
+        // Initial list is the selected cell
         List<GameObject> cellsToExpand = new List<GameObject> {grid[row, col]};
         ExpandZeros(new List<Point>(), cellsToExpand);
     }
@@ -173,9 +188,13 @@ public class GridManager : MonoBehaviour
         WinPanel.SetActive(false);
     }
 
+    // Called at the start to determine how large the grid is which determines cell size
     private void GetGridSize()
     {
         var rectTransform = transform.GetComponent<RectTransform>();
+
+        // The cell size is the minimum of the height/width minus buffer * 2 (buffer for each side)
+        // divided by the number of rows or columns
         cellSize = Math.Min((rectTransform.rect.width - (buffer * 2)) / cols, (rectTransform.rect.height - (buffer * 2)) / rows);
     }
 
@@ -211,9 +230,11 @@ public class GridManager : MonoBehaviour
             return;
         }
 
+        // Update some variables
         runTimer = true;
         populated = true;
         
+        // Variables to be used for random selection
         System.Random r = new System.Random();
         int randX;
         int randY;
@@ -249,8 +270,10 @@ public class GridManager : MonoBehaviour
             row = point.Y;
         } while (safe.Count < safeSize);
 
+        // Place bombs now that a safe area is marked
         while (bombsPlaced < numBombs)
         {
+            // Choose a cell to plant a bomb
             randX = r.Next(0, cols);
             randY = r.Next(0, rows);
             point = new Point(randX, randY);
@@ -258,11 +281,13 @@ public class GridManager : MonoBehaviour
             var currentCell = grid[randY, randX];
             var cManager = currentCell.GetComponent<CellManager>();
 
+            // Make sure the cell is empty and not in safe or possible lists.
+            // The reason it can't be in possible is due to safe cells needing a value
+            // of 0, meaning all neighbouring cells (ie the ones in possible) can't be bombs
             if (cManager.GetValue() == 0 && !possible.Contains(point) && !safe.Contains(point))
             {
                 // Space unoccupied, plant bomb
                 cManager.SetValue(-1);
-                board[randY, randX] = -1;
                 ++bombsPlaced;
             }
         }
@@ -275,6 +300,7 @@ public class GridManager : MonoBehaviour
             {
                 var currentCell = grid[row, col];
                 var cManager = currentCell.GetComponent<CellManager>();
+
                 // If cell is a bomb amount they're touching doesn't matter
                 if (cManager.GetValue() == -1)
                 {
@@ -290,6 +316,8 @@ public class GridManager : MonoBehaviour
                     try
                     {
                         var nbrCell = grid[p.Y, p.X];
+
+                        // Check if cell contains a bomb and increment bombsTouching if so
                         if (nbrCell.GetComponent<CellManager>().GetValue() == -1)
                         {
                             ++bombsTouching;
@@ -299,8 +327,9 @@ public class GridManager : MonoBehaviour
                         Debug.Log(e);
                     }
                 }
+
+                // Report the information to the cell manager
                 cManager.SetValue(bombsTouching);
-                board[row, col] = bombsTouching;
             }
         }
     }
@@ -310,6 +339,7 @@ public class GridManager : MonoBehaviour
        0 1 0    (x-1,y)   (x,y)   (x+1,y)
        0 0 0    (x-1,y+1) (x,y+1) (x+1,y+1)
      */
+     // Get all neighbours of a particular cell
     private List<Point> GetNeighbours(int x, int y)
     {
         // Return an array of 2D coordinates of the cells neighbours
@@ -324,7 +354,7 @@ public class GridManager : MonoBehaviour
                 {
                     continue;
                 }
-                else if (y + row >= 0 && y + row < rows && x + col >= 0 && x + col < cols)
+                else if (y + row >= 0 && y + row < rows && x + col >= 0 && x + col < cols) // Boundary checks
                 {
                     // Neighbour exists, add to list
                     Point nbr = new Point(x + col, y + row);
@@ -421,6 +451,7 @@ public class GridManager : MonoBehaviour
             var y = Math.Min(rows, expandSize + row) - Math.Max(0, row - expandSize); 
             if (expanded.Count >= x * y)
             {
+                // Wait a short amount of time to create the expansion effect
                 yield return new WaitForSeconds(Math.Min(1/expandSize, 0.05f));
                 expandSize += 1;
             }
@@ -438,6 +469,7 @@ public class GridManager : MonoBehaviour
         return mins.ToString() + ":" + secs.ToString().PadLeft(2, '0');
     }
 
+    // Called repeatedly to check if a win has occurred
     private void CheckWin()
     {
         if (finished)
@@ -446,6 +478,7 @@ public class GridManager : MonoBehaviour
             return;
         }
 
+        // Find out how many cells are still unrevealed
         var unrevealed = 0;
         for (int row = 0; row < rows; ++row)
         {
@@ -459,6 +492,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
+        // The game is won when amount of unrevealed cells matches the amount of bombs
         if (unrevealed == numBombs)
         {
             GameOver("win");
@@ -479,26 +513,6 @@ public class GridManager : MonoBehaviour
                     cManager.MarkSafe();
                 }
             }
-        }
-    }
-
-    // Test function for printing out board
-    void PrintBoard()
-    {
-        string board_str;
-
-        for (int row = 0; row < rows; ++row)
-        {
-            board_str = "";
-            for (int col = 0; col < cols; ++col)
-            {
-                if (board[row, col] != -1)
-                {
-                    board_str += " ";
-                }
-                board_str += board[row, col] + " ";
-            }
-            Debug.Log(board_str);
         }
     }
 }

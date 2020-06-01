@@ -2,13 +2,14 @@
 using UnityEngine;
 using UnityEngine.Audio;
 
-// All credit to Brackeys https://www.youtube.com/watch?v=6OT43pvUyfY
+// Credit to Brackeys https://www.youtube.com/watch?v=6OT43pvUyfY
 public class AudioManager : MonoBehaviour
 {
     public Sound[] sounds;
 
     public static AudioManager audioManager;
 
+    // Player preferences on whether they want sound or not
     private string playMusic;
     private string playSFX;
 
@@ -25,6 +26,7 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
+        // Going to be used through other scenes
         DontDestroyOnLoad(gameObject);
         
         // Adjust all values to what's specified
@@ -47,6 +49,7 @@ public class AudioManager : MonoBehaviour
 
     void Start()
     {
+        // Get basic preferences
         playMusic = PlayerPrefs.GetString("music");
         playSFX = PlayerPrefs.GetString("sfx");
 
@@ -91,10 +94,16 @@ public class AudioManager : MonoBehaviour
     // Play a sound
     public void PlaySound(string clipName)
     {
+        // Get specified sound from the array
         Sound toPlay = Array.Find(sounds, sound => sound.clipName == clipName);
         
+        // Two conditions to play the sound, one must be met for it to play
+        // Either the player wants sound effects and we aren't wanting to play the theme
+        // or the player wants the music and the clip name is theme
         var cond1 = playSFX == "on" && clipName != "theme";
         var cond2 = playMusic == "on" && clipName == "theme";
+
+        // Check one of the conditions is met and the clip exists
         if (toPlay != null && (cond1 || cond2))
         {
             toPlay.source.Play();
@@ -104,9 +113,11 @@ public class AudioManager : MonoBehaviour
     // Pause a sound
     private void PauseSound(string clipName)
     {
+        // Locate sound clip from the array
         Sound toPlay = Array.Find(sounds, sound => sound.clipName == clipName);
         if (toPlay != null)
         {
+            // Pause sound clip
             toPlay.source.Pause();
         }
     }

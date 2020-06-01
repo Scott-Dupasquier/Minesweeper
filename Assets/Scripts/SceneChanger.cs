@@ -22,11 +22,13 @@ public class SceneChanger : MonoBehaviour
 
     private IEnumerator Load(string sceneName)
     {
+        // Start close scene animation
         fade.SetTrigger("CloseScene");
         
         // Wait 1 second for animation
         yield return new WaitForSeconds(1);
 
+        // Load next scene
         SceneManager.LoadScene(sceneName);
     }
 }

@@ -31,6 +31,7 @@ public class SetDifficulty : MonoBehaviour
         UpdateButtonImages();
     }
 
+    // Change the difficulty to easy, intermediate, or hard
     public void ChangeDifficulty(string newDifficulty)
     {
         difficulty = newDifficulty;
@@ -41,6 +42,7 @@ public class SetDifficulty : MonoBehaviour
     // Can only ever have one checked at a time, call this to update them
     public void UpdateButtonImages()
     {
+        // Set the correct button to have the check mark
         if (difficulty == "easy")
         {
             easyButton.GetComponent<Image>().sprite = checkedIm;
