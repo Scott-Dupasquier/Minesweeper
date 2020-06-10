@@ -1,10 +1,10 @@
 Minesweeper
 ===========
-Creating the classic minesweeper game in Unity
+Creating the classic minesweeper game in Unity with a few twists. All work is licenced under the Apache 2.0 licence unless otherwise stated. 
 
 References
 ==========
-https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions
+Unity Manual used as code reference (https://docs.unity3d.com/Manual/index.html)
 
 Brackeys https://www.youtube.com/watch?v=6OT43pvUyfY
 
